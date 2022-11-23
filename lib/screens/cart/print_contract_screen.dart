@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:furniture_app/data/model/client_model.dart';
 import 'package:furniture_app/providers/invoice_provider.dart';
 import 'package:furniture_app/utils/color_resources.dart';
+import 'package:furniture_app/utils/custom_themes.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -56,6 +57,9 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
   List<OrderItem> myOrderItems = [];
 
   List<Cart> cartItems = [];
+
+  final paymentController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     print('orderItems>>>>${widget.orderItems}');
@@ -482,6 +486,81 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                   ),
                                 ],
                               ),
+
+                              SizedBox(
+                                height: 24,
+                              ),
+                              SizedBox(
+                                height: 48,
+                                child: TextFormField(
+                                  onChanged: (value) {
+
+                                  },
+                                  style: titleRegular.copyWith(fontSize: 18),
+                                  controller: paymentController,
+                                  decoration: InputDecoration(
+                                    suffixIcon: InkWell(
+                                      onTap: (){
+
+                                      },
+                                      child: Container(
+                                        width: 54,
+                                        height: 48,
+                                        decoration: const BoxDecoration(
+                                          color: ColorsResources.PRIMARY_COLOR,
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                            'Ok',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        width: 1,
+                                        color: Color.fromRGBO(171, 116, 64, 0.9),
+                                      ),
+                                      borderRadius: BorderRadius.circular(0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        width: 1,
+                                        color: ColorsResources.PRIMARY_COLOR,
+                                      ),
+                                      borderRadius: BorderRadius.circular(0),
+                                    ),
+                                    labelText: 'Prepayment',
+                                    labelStyle: titleRegular,
+                                    hintStyle: titleRegular,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 24,
+                              ),
+                              CustomItemWidget(
+                                // startText: AppLocalization.of(context)?.translate('to_sum_it_up') ?? 'Под итог',
+                                  startText: 'Предоплата',
+                                  endText:
+                                  '${moneyFormat(widget.order != null ? ((totalSum - totalSum * (widget.discount / 100)).toInt().toString()) : ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}'
+                                      '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
+                                  substring(widget.order!.orderItems[0].productId.price.branchPrice.lastIndexOf(' '),
+                                      widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'),
+                              CustomItemWidget(
+                                // startText: AppLocalization.of(context)?.translate('to_sum_it_up') ?? 'Под итог',
+                                  startText: 'Остаток платежа',
+                                  endText:
+                                  '${moneyFormat(widget.order != null ? ((totalSum - totalSum * (widget.discount / 100)).toInt().toString()) : ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}'
+                                      '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
+                                  substring(widget.order!.orderItems[0].productId.price.branchPrice.lastIndexOf(' '),
+                                      widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'),
+
                               SizedBox(
                                 height: 8,
                               ),

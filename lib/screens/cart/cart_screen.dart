@@ -295,21 +295,12 @@ class _CartScreenState extends State<CartScreen> {
                                                         setState(() {
                                                           isSum = true;
                                                         });
-                                                        subTotalValue = ((cart
-                                                                    .totalPrice
-                                                                    .toInt() -
-                                                                ((int.parse(controller
-                                                                            .text) *
-                                                                        0.01) *
-                                                                    cart.totalPrice
-                                                                        .toInt())))
+                                                        subTotalValue = ((cart.totalPrice.toInt() -
+                                                                ((int.parse(controller.text) * 0.01) * cart.totalPrice.toInt())))
                                                             .toInt();
-                                                        print(
-                                                            'subTotalValue>>>>>>$subTotalValue');
-                                                        print(
-                                                            'subTotalValue>>>>>>${cart.totalPrice.toInt()}');
-                                                        print(
-                                                            'subTotalValue>>>>>>${(int.parse(controller.text) * 0.01) * cart.totalPrice}');
+                                                        print('subTotalValue>>>>>>$subTotalValue');
+                                                        print('subTotalValue>>>>>>${cart.totalPrice.toInt()}');
+                                                        print('subTotalValue>>>>>>${(int.parse(controller.text) * 0.01) * cart.totalPrice}');
                                                       },
                                                       icon: Icon(
                                                         Icons.check_box,
@@ -348,9 +339,7 @@ class _CartScreenState extends State<CartScreen> {
                                       height: 54,
                                       color: Color.fromRGBO(171, 116, 64, 0.9),
                                       child: Center(
-                                        child: Text(AppLocalization.of(context)
-                                                ?.translate('next') ??
-                                            'Cледующий'),
+                                        child: Text(AppLocalization.of(context)?.translate('next') ?? 'Cледующий'),
                                       ),
                                     ),
                                   ),

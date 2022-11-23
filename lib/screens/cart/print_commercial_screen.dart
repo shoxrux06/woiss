@@ -12,6 +12,7 @@ import 'package:furniture_app/screens/cart/print_contract_screen.dart';
 import 'package:furniture_app/screens/pdf/pdf_review.dart';
 import 'package:furniture_app/utils/app_constants.dart';
 import 'package:furniture_app/utils/color_resources.dart';
+import 'package:furniture_app/utils/custom_themes.dart';
 import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -324,12 +325,9 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                           MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              AppLocalization.of(context)
-                                                  ?.translate('total') ??
-                                                  'Итог',
-                                              style: TextStyle(
-                                                color:
-                                                Color.fromRGBO(255, 255, 255, 0.9),
+                                              AppLocalization.of(context)?.translate('total') ?? 'Итог',
+                                              style: const TextStyle(
+                                                color: Color.fromRGBO(255, 255, 255, 0.9),
                                                 fontFamily: 'Roboto',
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w700,

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:furniture_app/data/cart.dart';
+import 'package:furniture_app/helpers/helper_functions.dart';
 import 'package:furniture_app/localization/app_localization.dart';
 import 'package:furniture_app/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
@@ -18,9 +19,13 @@ class CartItem extends StatefulWidget {
 
 class _CartItemState extends State<CartItem> {
   double paddingValue = 0.0;
+  String currencyName = 'sum';
+
   @override
   Widget build(BuildContext context) {
     final myModel = Provider.of<CartProvider>(context, listen: true);
+
+    currencyName = widget.cart.product.branchPrice.substring(widget.cart.product.branchPrice.lastIndexOf(' '), widget.cart.product.branchPrice.length);
 
     String languageCode = Localizations.localeOf(context).languageCode;
     String productName ='';
@@ -103,7 +108,7 @@ class _CartItemState extends State<CartItem> {
                     SizedBox(height: 8,),
                     FittedBox(
                       child: Text(
-                        '${widget.cart.product.branchPrice}',
+                        '${HelperFunctions.moneyFormat(widget.cart.product.intBranchPrice.toString())} $currencyName',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
                           fontFamily: 'Roboto',

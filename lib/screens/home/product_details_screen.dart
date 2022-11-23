@@ -43,10 +43,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   var isCustom1 = false;
   var isCustom2 = false;
 
+  var isDiscount = false;
+  var isIncrease = false;
+
+  double productPrice = 0.0;
+
+  String enteredDisIncValue = '';
+  bool isEnteredDisIncValueEmpty = true;
+
   double paddingValue = 0.0;
 
   TextEditingController colorController = TextEditingController();
   TextEditingController sizeController = TextEditingController();
+  TextEditingController discountIncreaseController = TextEditingController();
 
   String? moneyFormat(String price) {
     if (price.length > 2) {
@@ -61,11 +70,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    if(screenWidth >= 600 && screenWidth <= 700){
+    if (screenWidth >= 600 && screenWidth <= 700) {
       paddingValue = 20.0;
-    }else if(screenWidth > 700){
+    } else if (screenWidth > 700) {
       paddingValue = 50.0;
-    }else{
+    } else {
       paddingValue = 0.0;
     }
     String languageCode = Localizations.localeOf(context).languageCode;
@@ -89,15 +98,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               cartModel.updateCounter();
             },
             child: Icon(
-              Platform.isIOS? Icons.arrow_back_ios:Icons.arrow_back,
+              Platform.isIOS ? Icons.arrow_back_ios : Icons.arrow_back,
               color: Colors.white,
             ),
           ),
           backgroundColor: ColorsResources.PRIMARY_BACKROUND_COLOR,
-          leadingWidth: screenWidth >=600?100: 54,
+          leadingWidth: screenWidth >= 600 ? 100 : 54,
           actions: [
             Padding(
-              padding: EdgeInsets.only(left: 24, right: screenWidth >=600?38:12),
+              padding: EdgeInsets.only(left: 24, right: screenWidth >= 600 ? 38 : 12),
               child: InkWell(
                 onTap: () {
                   Navigator.of(context).pushReplacement(
@@ -146,7 +155,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         body: Consumer<CartProvider>(
           builder: (context, provider, child) {
             return Container(
-              padding: EdgeInsets.only(left: paddingValue, right: paddingValue, bottom: paddingValue, top: paddingValue),
+              padding: EdgeInsets.only(
+                  left: paddingValue,
+                  right: paddingValue,
+                  bottom: paddingValue,
+                  top: paddingValue),
               color: ColorsResources.PRIMARY_BACKROUND_COLOR,
               child: CustomScrollView(
                 slivers: [
@@ -173,21 +186,25 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 child: CachedNetworkImage(
                                   imageUrl: '${widget.product.img}',
                                   width: double.infinity,
-                                  height: screenWidth>=600?407:307,
-                                  placeholder: (BuildContext context, String url) => Container(
+                                  height: screenWidth >= 600 ? 407 : 307,
+                                  placeholder:
+                                      (BuildContext context, String url) =>
+                                          Container(
                                     width: 320,
                                     height: 240,
                                     color: Colors.grey,
                                   ),
-                                  errorWidget: (context, url, error) => new Icon(Icons.error),
+                                  errorWidget: (context, url, error) =>
+                                      new Icon(Icons.error),
                                   // fit: BoxFit.contain,
                                 ),
                               ),
                             ),
                           ),
                           Padding(
-                            padding: screenWidth>=600?const EdgeInsets.symmetric(vertical: 20):
-                            const EdgeInsets.all(20.0),
+                            padding: screenWidth >= 600
+                                ? const EdgeInsets.symmetric(vertical: 20)
+                                : const EdgeInsets.all(20.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -208,12 +225,23 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           height: 8,
                                         ),
                                         Text(
-                                            widget.product.branchPrice.toString(),
+                                          widget.product.branchPrice.toString(),
                                           // '${moneyFormat(widget.product.intBranchPrice.toString())} ${AppLocalization.of(context)?.translate('sum') ?? 'сум'}',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 16,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 12,
+                                        ),
+                                        Text(
+                                            isEnteredDisIncValueEmpty?'':'${moneyFormat('${productPrice.round()}')?? ''} ${widget.product.branchPrice.substring(widget.product.branchPrice.lastIndexOf(' '),widget.product.branchPrice.length)}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
                                           ),
                                         ),
                                       ],
@@ -271,8 +299,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             cartModel.addCounter();
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.only(
-                                                top: 0,
+                                            padding: EdgeInsets.only(top: 0,
                                                 right: 8,
                                                 left: 8,
                                                 bottom: 8),
@@ -301,102 +328,245 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 SizedBox(
                                   height: 24,
                                 ),
-                                screenWidth>=600?colorWidgetTablet(AppLocalization.of(context)?.translate('color') ?? 'Цвета'):colorWidget(AppLocalization.of(context)?.translate('color') ?? 'Цвета'),
+                                screenWidth >= 600
+                                    ? colorWidgetTablet(
+                                        AppLocalization.of(context)?.translate('color') ?? 'Цвета')
+                                    : colorWidget(AppLocalization.of(context)?.translate('color') ?? 'Цвета'),
                                 const SizedBox(
                                   height: 12,
                                 ),
-                                screenWidth>=600?sizeWidgetTablet(AppLocalization.of(context)?.translate('size') ?? 'Размер'):sizeWidget(AppLocalization.of(context)?.translate('size') ?? 'Размер'),
+                                screenWidth >= 600
+                                    ? sizeWidgetTablet(
+                                        AppLocalization.of(context)?.translate('size') ??'Размер')
+                                    : sizeWidget(AppLocalization.of(context)?.translate('size') ?? 'Размер'),
+                                const SizedBox(
+                                  height: 24,
+                                ),
+                                Divider(
+                                  height: 2,
+                                  color: ColorsResources.PRIMARY_COLOR,
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: InkWell(
+                                        child: ListTileTheme(
+                                          contentPadding: EdgeInsets.all(0),
+                                          child: CheckboxListTile(
+                                            contentPadding: EdgeInsets.all(0),
+                                            controlAffinity:
+                                                ListTileControlAffinity.leading,
+                                            title: const Text(
+                                              // AppLocalization.of(context)?.translate('standart') ??
+                                              //     'Standart',
+                                              'Discount',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                            value: isDiscount,
+                                            onChanged: (bool? val) {
+                                              setState(() {
+                                                isIncrease = false;
+                                                isDiscount = val!;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: CheckboxListTile(
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                        contentPadding: EdgeInsets.all(0),
+                                        title: const Text(
+                                          // AppLocalization.of(context)?.translate('custom') ??
+                                          //     'Custom',
+                                          'Increase',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        value: isIncrease,
+                                        onChanged: (bool? val) {
+                                          setState(() {
+                                            isDiscount = false;
+                                            isIncrease = val!;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: (isDiscount || isIncrease) ? 20 : 0,
+                                ),
+                                (isDiscount || isIncrease)
+                                    ? Container(
+                                        height: 48,
+                                        child: TextFormField(
+                                          onChanged: (value) {
+                                            enteredDisIncValue = value;
+                                            if(isDiscount && value.isNotEmpty){
+                                              setState(() {
+                                                if(int.parse(value.trim()) == 100){
+                                                  productPrice = 0;
+                                                }else{
+                                                  productPrice = widget.product.intBranchPrice - widget.product.intBranchPrice * (int.parse(value) /100);
+                                                }
+
+                                              });
+                                            }else if(isIncrease && value.isNotEmpty){
+                                              setState(() {
+                                                productPrice = productPrice + widget.product.intBranchPrice * (int.parse(value) /100);
+                                              });
+
+                                            }else{
+                                              setState(() {
+                                                productPrice = widget.product.intBranchPrice.roundToDouble();
+                                              });
+
+                                            }
+
+                                            if(value.isEmpty){
+                                              setState((){
+                                                isEnteredDisIncValueEmpty = true;
+                                              });
+                                            }
+                                            if(value.isNotEmpty){
+                                              setState((){
+                                                isEnteredDisIncValueEmpty = false;
+                                              });
+                                            }
+
+                                          },
+                                          style: titleRegular.copyWith(fontSize: 18),
+                                          controller: discountIncreaseController,
+                                          decoration: InputDecoration(
+                                            suffixIcon: InkWell(
+                                              onTap: (){
+                                                setState(() {});
+                                                if(isDiscount){
+                                                  productPrice = widget.product.intBranchPrice - widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
+                                                }else if(isIncrease){
+                                                  productPrice = productPrice + widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
+                                                }else{
+                                                  productPrice = widget.product.intBranchPrice.roundToDouble();
+                                                }
+                                              },
+                                              child: Container(
+                                                width: 54,
+                                                height: 48,
+                                                decoration: const BoxDecoration(
+                                                  color: ColorsResources
+                                                      .PRIMARY_COLOR,
+                                                ),
+                                                child: const Center(
+                                                  child: Text(
+                                                    'Ok',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.w700,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                width: 1,
+                                                color: Color.fromRGBO(171, 116, 64, 0.9),
+                                              ),
+                                              borderRadius: BorderRadius.circular(0),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                width: 1,
+                                                color: ColorsResources.PRIMARY_COLOR,
+                                              ),
+                                              borderRadius: BorderRadius.circular(0),
+                                            ),
+                                            labelText: AppLocalization.of(context)?.translate('your_preferences') ?? 'Ваши предпочтения',
+                                            labelStyle: titleRegular,
+                                            hintStyle: titleRegular,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
+                                SizedBox(
+                                  height: 60,
+                                ),
                                 // Spacer(),
                                 SizedBox(
                                   height: 60,
                                 ),
                                 GestureDetector(
                                   onTap: () async {
+
+                                    if(isDiscount){
+                                      productPrice = widget.product.intBranchPrice - widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
+                                    }else if(isIncrease){
+                                      productPrice = productPrice + widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
+                                    }else{
+                                      productPrice = widget.product.intBranchPrice.roundToDouble();
+                                    }
                                     if (languageCode == 'en') {
                                       isStandart1
                                           ? widget.product.colorEn =
-                                              AppLocalization.of(context)
-                                                      ?.translate('standart') ??
-                                                  'Standart'
-                                          : AppLocalization.of(context)
-                                                  ?.translate('custom') ??
-                                              'Custom';
+                                              AppLocalization.of(context)?.translate('standart') ?? 'Standart'
+                                          : AppLocalization.of(context)?.translate('custom') ?? 'Custom';
                                       isCustom1
-                                          ? widget.product.colorEn =
-                                              colorController.text
-                                          : '';
+                                          ? widget.product.colorEn = colorController.text : '';
                                     } else if (languageCode == 'ru') {
                                       isStandart1
                                           ? widget.product.colorRu =
-                                              AppLocalization.of(context)
-                                                      ?.translate('standart') ??
-                                                  'Standart'
-                                          : AppLocalization.of(context)
-                                                  ?.translate('custom') ??
-                                              'Custom';
+                                              AppLocalization.of(context)?.translate('standart') ?? 'Standart'
+                                          : AppLocalization.of(context)?.translate('custom') ?? 'Custom';
                                       isCustom1
-                                          ? widget.product.colorRu =
-                                              colorController.text
-                                          : '';
+                                          ? widget.product.colorRu = colorController.text : '';
                                     } else if (languageCode == 'tr') {
                                       isStandart1
                                           ? widget.product.colorTr =
-                                              AppLocalization.of(context)
-                                                      ?.translate('standart') ??
-                                                  'Standart'
-                                          : AppLocalization.of(context)
-                                                  ?.translate('custom') ??
+                                              AppLocalization.of(context)?.translate('standart') ?? 'Standart'
+                                          : AppLocalization.of(context)?.translate('custom') ??
                                               'Custom';
                                       isCustom1
-                                          ? widget.product.colorTr =
-                                              colorController.text
-                                          : '';
+                                          ? widget.product.colorTr = colorController.text : '';
                                     } else if (languageCode == 'uz') {
                                       isStandart1
                                           ? widget.product.colorUz =
-                                              AppLocalization.of(context)
-                                                      ?.translate('standart') ??
-                                                  'Standart'
-                                          : AppLocalization.of(context)
-                                                  ?.translate('custom') ??
-                                              'Custom';
+                                              AppLocalization.of(context)?.translate('standart') ?? 'Standart': AppLocalization.of(context)?.translate('custom') ?? 'Custom';
                                       isCustom1
-                                          ? widget.product.colorUz =
-                                              colorController.text
-                                          : '';
+                                          ? widget.product.colorUz = colorController.text : '';
                                     }
 
                                     isStandart1
                                         ? widget.product.colorEn =
-                                            AppLocalization.of(context)
-                                                    ?.translate('standart') ??
-                                                'Standart'
-                                        : AppLocalization.of(context)
-                                                ?.translate('custom') ??
-                                            'Custom';
+                                            AppLocalization.of(context)?.translate('standart') ?? 'Standart'
+                                        : AppLocalization.of(context)?.translate('custom') ?? 'Custom';
                                     isCustom1
-                                        ? widget.product.colorEn =
-                                            colorController.text
-                                        : '';
+                                        ? widget.product.colorEn = colorController.text : '';
                                     if (isStandart1) {}
-
                                     isStandart2
                                         ? widget.product.size =
-                                            AppLocalization.of(context)
-                                                    ?.translate('standart') ??
-                                                'Standart'
-                                        : AppLocalization.of(context)
-                                                ?.translate('custom') ??
-                                            'Custom';
+                                            AppLocalization.of(context)?.translate('standart') ?? 'Standart'
+                                        : AppLocalization.of(context)?.translate('custom') ?? 'Custom';
                                     isCustom2
-                                        ? widget.product.size =
-                                            sizeController.text
-                                        : '';
+                                        ? widget.product.size = sizeController.text : '';
 
-                                    if (
-                                        (isStandart1 == true || isCustom1 == true) &&
-                                        (isStandart2 == true || isCustom2 == true)
-                                    ) {
+                                    if ((isStandart1 == true || isCustom1 == true) && (isStandart2 == true || isCustom2 == true)) {
                                       CustomProductModel? myProductModel;
                                       if (isStandart1 && isStandart2) {
                                         myProductModel = CustomProductModel(
@@ -406,19 +576,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           nameTr: widget.product.nameTr,
                                           nameUz: widget.product.nameUz,
                                           price: widget.product.price,
-                                          branchPrice:
-                                              widget.product.branchPrice,
-                                          intBranchPrice:
-                                              widget.product.intBranchPrice,
+                                          branchPrice: widget.product.branchPrice,
+                                          intBranchPrice: productPrice.round(),
                                           img: widget.product.img,
-                                          color: AppLocalization.of(context)
-                                                  ?.translate('standart') ??
-                                              'Standart',
-                                          size: AppLocalization.of(context)
-                                                  ?.translate('standart') ??
-                                              'Standart',
-                                          categoryName:
-                                              widget.product.categoryName,
+                                          color: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
+                                          size: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
+                                          categoryName: widget.product.categoryName,
                                         );
                                       } else if (isCustom1 && isCustom2) {
                                         myProductModel = CustomProductModel(
@@ -428,15 +591,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           nameTr: widget.product.nameTr,
                                           nameUz: widget.product.nameUz,
                                           price: widget.product.price,
-                                          branchPrice:
-                                              widget.product.branchPrice,
-                                          intBranchPrice:
-                                              widget.product.intBranchPrice,
+                                          branchPrice: widget.product.branchPrice,
+                                          intBranchPrice: productPrice.round(),
                                           img: widget.product.img,
                                           color: colorController.text,
                                           size: sizeController.text,
-                                          categoryName:
-                                              widget.product.categoryName,
+                                          categoryName: widget.product.categoryName,
                                         );
                                       } else if (isStandart1 && isCustom2) {
                                         myProductModel = CustomProductModel(
@@ -446,17 +606,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           nameTr: widget.product.nameTr,
                                           nameUz: widget.product.nameUz,
                                           price: widget.product.price,
-                                          branchPrice:
-                                              widget.product.branchPrice,
-                                          intBranchPrice:
-                                              widget.product.intBranchPrice,
+                                          branchPrice: widget.product.branchPrice,
+                                          intBranchPrice: productPrice.round(),
                                           img: widget.product.img,
-                                          color: AppLocalization.of(context)
-                                                  ?.translate('standart') ??
-                                              'Standart',
+                                          color: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
                                           size: sizeController.text,
-                                          categoryName:
-                                              widget.product.categoryName,
+                                          categoryName: widget.product.categoryName,
                                         );
                                       } else if (isCustom1 && isStandart2) {
                                         myProductModel = CustomProductModel(
@@ -467,12 +622,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           nameUz: widget.product.nameUz,
                                           price: widget.product.price,
                                           branchPrice: widget.product.branchPrice,
-                                          intBranchPrice: widget.product.intBranchPrice,
+                                          intBranchPrice: productPrice.round(),
                                           img: widget.product.img,
                                           color: colorController.text,
                                           size: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
-                                          categoryName:
-                                              widget.product.categoryName,
+                                          categoryName: widget.product.categoryName,
                                         );
                                       }
 
@@ -488,32 +642,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 nameUz: widget.product.nameUz,
                                                 price: widget.product.price,
                                                 branchPrice: widget.product.branchPrice,
-                                                intBranchPrice: widget.product.intBranchPrice,
+                                                intBranchPrice:productPrice.round(),
                                                 img: widget.product.img,
                                                 color: colorController.text,
                                                 size: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
                                                 categoryName: widget.product.categoryName,
                                               ),
-                                          quantity:
-                                              ValueNotifier(cartModel.counter),
+                                          quantity: ValueNotifier(cartModel.counter),
                                         ),
                                       );
                                       Navigator.of(context).pop();
-                                      cartModel.addTotalPrice(
-                                          widget.product.intBranchPrice, false);
+                                      cartModel.addTotalPrice(productPrice.round(), false);
                                       cartModel.addProductCounter();
                                       cartModel.updateCounter();
-                                      showCustomSuccessSnackBar(AppLocalization
-                                                  .of(context)
-                                              ?.translate(
-                                                  'product_added_to_cart') ??
-                                          'Товар добавлен в корзину');
+                                      showCustomSuccessSnackBar(AppLocalization.of(context)?.translate('product_added_to_cart') ?? 'Товар добавлен в корзину');
                                     } else {
-                                      showCustomSnackBar(AppLocalization.of(
-                                                  context)
-                                              ?.translate(
-                                                  'color_or_size_not_selected') ??
-                                          'Цвет или размер не выбраны');
+                                      showCustomSnackBar(AppLocalization.of(context)?.translate('color_or_size_not_selected') ?? 'Цвет или размер не выбраны');
                                     }
                                   },
                                   child: Container(
@@ -521,9 +665,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     height: 54,
                                     color: Color.fromRGBO(171, 116, 64, 0.9),
                                     child: Center(
-                                      child: Text(AppLocalization.of(context)
-                                              ?.translate('add_to_cart') ??
-                                          'Добавить в корзину'),
+                                      child: Text(AppLocalization.of(context)?.translate('add_to_cart') ??'Добавить в корзину'),
                                     ),
                                   ),
                                 ),
@@ -777,7 +919,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget colorWidgetTablet(String text){
+  Widget colorWidgetTablet(String text) {
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -849,48 +991,47 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
               Expanded(
                   flex: 2,
-                  child:isCustom1
+                  child: isCustom1
                       ? Container(
-                    height: 48,
-                    child: TextFormField(
-                      style: titleRegular.copyWith(fontSize: 18),
-                      controller: colorController,
-                      decoration: InputDecoration(
-                        suffixIcon: Padding(
-                          padding: EdgeInsets.only(top: 13, left: 20),
-                          child: Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
+                          height: 48,
+                          child: TextFormField(
+                            style: titleRegular.copyWith(fontSize: 18),
+                            controller: colorController,
+                            decoration: InputDecoration(
+                              suffixIcon: Padding(
+                                padding: EdgeInsets.only(top: 13, left: 20),
+                                child: Text(
+                                  '*',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 1,
+                                  color: Color.fromRGBO(171, 116, 64, 0.9),
+                                ),
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 1,
+                                  color: ColorsResources.PRIMARY_COLOR,
+                                ),
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              labelText: AppLocalization.of(context)
+                                      ?.translate('your_preferences') ??
+                                  'Ваши предпочтения',
+                              labelStyle: titleRegular,
+                              hintStyle: titleRegular,
                             ),
                           ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1,
-                            color: Color.fromRGBO(171, 116, 64, 0.9),
-                          ),
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1,
-                            color: ColorsResources.PRIMARY_COLOR,
-                          ),
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        labelText: AppLocalization.of(context)
-                            ?.translate('your_preferences') ??
-                            'Ваши предпочтения',
-                        labelStyle: titleRegular,
-                        hintStyle: titleRegular,
-                      ),
-                    ),
-                  )
-                      : Container()
-              )
+                        )
+                      : Container())
             ],
           ),
         ],
@@ -898,7 +1039,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget sizeWidgetTablet(String text){
+  Widget sizeWidgetTablet(String text) {
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -970,48 +1111,47 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
               Expanded(
                   flex: 2,
-                  child:isCustom2
+                  child: isCustom2
                       ? Container(
-                       height: 48,
-                      child: TextFormField(
-                      style: titleRegular.copyWith(fontSize: 18),
-                      controller: sizeController,
-                      decoration: InputDecoration(
-                        suffixIcon: Padding(
-                          padding: EdgeInsets.only(top: 13, left: 20),
-                          child: Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
+                          height: 48,
+                          child: TextFormField(
+                            style: titleRegular.copyWith(fontSize: 18),
+                            controller: sizeController,
+                            decoration: InputDecoration(
+                              suffixIcon: Padding(
+                                padding: EdgeInsets.only(top: 13, left: 20),
+                                child: Text(
+                                  '*',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 1,
+                                  color: Color.fromRGBO(171, 116, 64, 0.9),
+                                ),
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 1,
+                                  color: ColorsResources.PRIMARY_COLOR,
+                                ),
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              labelText: AppLocalization.of(context)
+                                      ?.translate('your_preferences') ??
+                                  'Ваши предпочтения',
+                              labelStyle: titleRegular,
+                              hintStyle: titleRegular,
                             ),
                           ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1,
-                            color: Color.fromRGBO(171, 116, 64, 0.9),
-                          ),
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1,
-                            color: ColorsResources.PRIMARY_COLOR,
-                          ),
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        labelText: AppLocalization.of(context)
-                            ?.translate('your_preferences') ??
-                            'Ваши предпочтения',
-                        labelStyle: titleRegular,
-                        hintStyle: titleRegular,
-                      ),
-                    ),
-                  )
-                      : Container()
-              )
+                        )
+                      : Container())
             ],
           ),
         ],
