@@ -184,7 +184,7 @@ class _ContractScreenState extends State<ContractScreen> {
 
                                     Text(
                                       invoiceProvider.contractList[index].orderItems.isNotEmpty? '${moneyFormat(invoiceProvider.contractList[index].orderItems.map((e)
-                                      => e.quantity * e.productId.price.intBranchPrice).reduce((value, element) => value + element).toString())}'
+                                      => e.quantity * e.iodp.round()).reduce((value, element) => value + element).toString())}'
                                           '$valyutaName' : '0$valyutaName',
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
@@ -298,7 +298,7 @@ class _ContractScreenState extends State<ContractScreen> {
 
                                 Text(
                                   invoiceProvider.contractList[index].orderItems.isNotEmpty? '${moneyFormat(invoiceProvider.contractList[index].orderItems.map((e)
-                                  => e.quantity * e.productId.price.intBranchPrice).reduce((value, element) => value + element).toString())}'
+                                  => e.quantity * e.iodp.round()).reduce((value, element) => value + element).toString())}'
                                       '$valyutaName' : '0$valyutaName',
                                   style: TextStyle(
                                     fontFamily: 'Roboto',

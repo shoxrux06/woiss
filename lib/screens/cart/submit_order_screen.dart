@@ -347,13 +347,15 @@ class _SubmitOrderScreenState extends State<SubmitOrderScreen> {
                             int? quantity;
                             String color = '';
                             String size = '';
+                            double iodp = 0.0;
                             List<MyOrderItem> orderItems = [];
                             for (int i = 0; i < cartProvider.cartList.length; i++) {
                               productId = cartProvider.cartList[i].product.id;
                               quantity = cartProvider.cartList[i].quantity.value;
                               color = cartProvider.cartList[i].product.color;
                               size = cartProvider.cartList[i].product.size;
-                              orderItems.add(MyOrderItem(product_id: productId??0, quantity: quantity ?? 0, color: color, size: size)
+                              iodp = cartProvider.cartList[i].product.iodp;
+                              orderItems.add(MyOrderItem(product_id: productId??0, quantity: quantity ?? 0, color: color, size: size, iodp: iodp)
                               );
                             }
                             CacheManager cacheManager = CacheManager();

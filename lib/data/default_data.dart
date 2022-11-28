@@ -1,5 +1,5 @@
 class DefaultData {
-  List<String> _languagesListDefault = [
+  final List<String> _languagesListDefault = [
     'English',
     'Русский',
     'Tűrkce',

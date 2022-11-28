@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:furniture_app/data/model/invoice_upload_model.dart';
 import 'package:furniture_app/data/repository/invoice_repo.dart';
 import 'package:furniture_app/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +17,8 @@ class InvoiceProvider extends ChangeNotifier{
   List<Order> get commercialList  => _commercialList;
 
   List<Order> _contractList = [];
+
+  InvoiceUploadModel? invoiceUploadModel;
 
 
   int _quantityOfCommercials = 0;
@@ -114,6 +119,23 @@ class InvoiceProvider extends ChangeNotifier{
     notifyListeners();
   }
 
+  Future<void> uploadInvoices(int id, String type, Uint8List file) async {
+    dynamic response;
+    _isLoadingContract = true;
+    response = await invoiceRepo.uploadInvoices(id, type, file);
+    print('response -->$response');
+    print('response success -->${response['status']}');
+    print('response success --> hii');
+    if(response != null && response['status'] == 'success') {
+      invoiceUploadModel = InvoiceUploadModel.fromJson(response);
+      notifyListeners();
+    }else {
+      print('error file upload');
+      notifyListeners();
+    }
+    _isLoadingContract = false;
+    notifyListeners();
+  }
 
 
 }

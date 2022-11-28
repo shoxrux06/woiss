@@ -51,11 +51,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   String enteredDisIncValue = '';
   bool isEnteredDisIncValueEmpty = true;
 
+  bool isTouched = false;
+
   double paddingValue = 0.0;
 
   TextEditingController colorController = TextEditingController();
   TextEditingController sizeController = TextEditingController();
-  TextEditingController discountIncreaseController = TextEditingController();
+  TextEditingController priceDecreaseOrIncreaseController = TextEditingController();
 
   String? moneyFormat(String price) {
     if (price.length > 2) {
@@ -236,14 +238,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         SizedBox(
                                           height: 12,
                                         ),
-                                        Text(
-                                            isEnteredDisIncValueEmpty?'':'${moneyFormat('${productPrice.round()}')?? ''} ${widget.product.branchPrice.substring(widget.product.branchPrice.lastIndexOf(' '),widget.product.branchPrice.length)}',
+                                        (isDiscount || isIncrease)?Text(
+                                            (isEnteredDisIncValueEmpty)?'':'${moneyFormat('${productPrice.round()}')?? ''} '
+                                                '${widget.product.branchPrice.substring(widget.product.branchPrice.lastIndexOf(' '),widget.product.branchPrice.length)}',
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 14,
                                           ),
-                                        ),
+                                        ): SizedBox(),
                                       ],
                                     ),
                                     Spacer(),
@@ -425,17 +428,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 }else{
                                                   productPrice = widget.product.intBranchPrice - widget.product.intBranchPrice * (int.parse(value) /100);
                                                 }
-
+                                                print('isDiscount  -->$productPrice');
                                               });
                                             }else if(isIncrease && value.isNotEmpty){
                                               setState(() {
-                                                productPrice = productPrice + widget.product.intBranchPrice * (int.parse(value) /100);
+                                                productPrice = widget.product.intBranchPrice + widget.product.intBranchPrice * (int.parse(value) /100);
+                                                print('isIncrease --> $productPrice');
                                               });
-
                                             }else{
                                               setState(() {
                                                 productPrice = widget.product.intBranchPrice.roundToDouble();
                                               });
+                                              print(productPrice);
 
                                             }
 
@@ -452,15 +456,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
                                           },
                                           style: titleRegular.copyWith(fontSize: 18),
-                                          controller: discountIncreaseController,
+                                          controller: priceDecreaseOrIncreaseController,
                                           decoration: InputDecoration(
                                             suffixIcon: InkWell(
                                               onTap: (){
+                                                if(priceDecreaseOrIncreaseController.text.isEmpty &&(isDiscount || isIncrease)){
+                                                  showCustomSnackBar('Please enter discount or increase value');
+                                                }
                                                 setState(() {});
                                                 if(isDiscount){
                                                   productPrice = widget.product.intBranchPrice - widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
+                                                  print('8***productPrice$productPrice***');
                                                 }else if(isIncrease){
-                                                  productPrice = productPrice + widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
+                                                  productPrice = widget.product.intBranchPrice + widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
                                                 }else{
                                                   productPrice = widget.product.intBranchPrice.roundToDouble();
                                                 }
@@ -514,7 +522,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () async {
-
+                                    if(priceDecreaseOrIncreaseController.text.isEmpty && (isDiscount || isIncrease)){
+                                      showCustomSnackBar('Please enter discount or increase value');
+                                    }
                                     if(isDiscount){
                                       productPrice = widget.product.intBranchPrice - widget.product.intBranchPrice * (int.parse(enteredDisIncValue) /100);
                                     }else if(isIncrease){
@@ -581,6 +591,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           img: widget.product.img,
                                           color: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
                                           size: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
+                                          iodp: productPrice,
                                           categoryName: widget.product.categoryName,
                                         );
                                       } else if (isCustom1 && isCustom2) {
@@ -596,6 +607,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           img: widget.product.img,
                                           color: colorController.text,
                                           size: sizeController.text,
+                                          iodp: productPrice,
                                           categoryName: widget.product.categoryName,
                                         );
                                       } else if (isStandart1 && isCustom2) {
@@ -611,6 +623,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           img: widget.product.img,
                                           color: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
                                           size: sizeController.text,
+                                          iodp: productPrice,
                                           categoryName: widget.product.categoryName,
                                         );
                                       } else if (isCustom1 && isStandart2) {
@@ -626,6 +639,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           img: widget.product.img,
                                           color: colorController.text,
                                           size: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
+                                          iodp: productPrice,
                                           categoryName: widget.product.categoryName,
                                         );
                                       }
@@ -646,6 +660,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 img: widget.product.img,
                                                 color: colorController.text,
                                                 size: AppLocalization.of(context)?.translate('standart') ?? 'Standart',
+                                                iodp: productPrice,
                                                 categoryName: widget.product.categoryName,
                                               ),
                                           quantity: ValueNotifier(cartModel.counter),
@@ -660,10 +675,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       showCustomSnackBar(AppLocalization.of(context)?.translate('color_or_size_not_selected') ?? 'Цвет или размер не выбраны');
                                     }
                                   },
+                                  onTapDown: (details){
+                                    setState(() {
+                                      isTouched = true;
+                                    });
+                                  },
+                                  onTapUp: (details){
+                                    setState(() {
+                                      isTouched = false;
+                                    });
+                                  },
                                   child: Container(
                                     width: double.infinity,
                                     height: 54,
-                                    color: Color.fromRGBO(171, 116, 64, 0.9),
+                                    color: isTouched? Color.fromRGBO(171, 116, 64, 1):Color.fromRGBO(171, 116, 64, 0.9),
                                     child: Center(
                                       child: Text(AppLocalization.of(context)?.translate('add_to_cart') ??'Добавить в корзину'),
                                     ),
@@ -736,8 +761,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.all(0),
                   title: Text(
-                    AppLocalization.of(context)?.translate('custom') ??
-                        'Custom',
+                    AppLocalization.of(context)?.translate('custom') ?? 'Custom',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w400,

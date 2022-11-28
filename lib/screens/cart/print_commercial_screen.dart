@@ -65,6 +65,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
   int quantity = 0;
   String color = '';
   String size = '';
+  double iodp = 0.0;
 
   final globalKey = GlobalKey();
 
@@ -141,6 +142,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
             img: myOrderItems[i].productId.img,
             color: myOrderItems[i].color,
             size: myOrderItems[i].size,
+            iodp: myOrderItems[i].iodp,
             categoryName: myOrderItems[i].productId.categoryId.name,
           ),
           quantity: ValueNotifier(
@@ -153,18 +155,18 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
       color = myOrderItems[i].color;
       size = myOrderItems[i].size;
       quantity = myOrderItems[i].quantity;
+      iodp = myOrderItems[i].iodp;
 
-      orderItems.add(MyOrderItem(product_id: productId, quantity: quantity, color: color, size: size));
+      orderItems.add(MyOrderItem(product_id: productId, quantity: quantity, color: color, size: size, iodp: iodp));
     }
     if (widget.order != null) {
       for (int i = 0; i < widget.order!.orderItems.length; i++) {
-        totalSum +=
-            (widget.order!.orderItems[i].productId.price.intBranchPrice *
+        totalSum += (widget.order!.orderItems[i].iodp.round() *
                 widget.order!.orderItems[i].quantity);
       }
     } else {
       for (int i = 0; i < widget.orderItems.length; i++) {
-        editedTotalSum += (widget.orderItems[i].productId.price.intBranchPrice *
+        editedTotalSum += (widget.orderItems[i].iodp.round() *
             widget.orderItems[i].quantity);
       }
     }
@@ -284,9 +286,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                 Row(
                                   children: [
                                     Expanded(child: CustomItemWidget(
-                                        startText: AppLocalization.of(context)
-                                            ?.translate('price') ??
-                                            'Цена',
+                                        startText: AppLocalization.of(context)?.translate('price') ?? 'Цена',
                                         endText:
                                         '${moneyFormat(widget.order != null ? (totalSum.toString()) : (editedTotalSum.toString()))} '
                                             '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
@@ -294,9 +294,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                             widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'),),
                                     SizedBox(width: 24,),
                                     Expanded(child: CustomItemWidget(
-                                        startText: AppLocalization.of(context)
-                                            ?.translate('to_sum_it_up') ??
-                                            'Под итог',
+                                        startText: AppLocalization.of(context)?.translate('to_sum_it_up') ?? 'Под итог',
                                         endText:
                                         '${moneyFormat(widget.order != null ? ((totalSum - totalSum * (widget.discount / 100)).toInt().toString()) : ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}'
                                             '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
@@ -307,9 +305,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                 Row(
                                   children: [
                                     Expanded(child: CustomItemWidget(
-                                        startText: AppLocalization.of(context)
-                                            ?.translate('discount') ??
-                                            'Скидка',
+                                        startText: AppLocalization.of(context)?.translate('discount') ?? 'Скидка',
                                         endText: '${widget.discount}%'),),
                                     SizedBox(width: 24,),
                                     Expanded(child: Column(
@@ -596,24 +592,13 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                CustomItemWidget(
-                                    startText: AppLocalization.of(context)
-                                        ?.translate('price') ??
-                                        'Цена',
-                                    endText:
+                                CustomItemWidget(startText: AppLocalization.of(context)?.translate('price') ?? 'Цена', endText:
                                     '${moneyFormat(widget.order != null ? (totalSum.toString()) : (editedTotalSum.toString()))}'
                                         '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
                                 substring(widget.order!.orderItems[0].productId.price.branchPrice.lastIndexOf(' '),
                                 widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'),
-                                CustomItemWidget(
-                                    startText: AppLocalization.of(context)
-                                        ?.translate('discount') ??
-                                        'Скидка',
-                                    endText: '${widget.discount}%'),
-                                CustomItemWidget(
-                                    startText: AppLocalization.of(context)
-                                        ?.translate('to_sum_it_up') ??
-                                        'Под итог',
+                                CustomItemWidget(startText: AppLocalization.of(context)?.translate('discount') ?? 'Скидка', endText: '${widget.discount}%'),
+                                CustomItemWidget(startText: AppLocalization.of(context)?.translate('to_sum_it_up') ?? 'Под итог',
                                     endText:
                                     '${moneyFormat(widget.order != null ? ((totalSum - totalSum * (widget.discount / 100)).toInt().toString()) : ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}'
                                         '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
@@ -627,9 +612,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                   MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      AppLocalization.of(context)
-                                          ?.translate('total') ??
-                                          'Итог',
+                                      AppLocalization.of(context)?.translate('total') ?? 'Итог',
                                       style: TextStyle(
                                         color:
                                         Color.fromRGBO(255, 255, 255, 0.9),
@@ -646,8 +629,7 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                       substring(widget.order!.orderItems[0].productId.price.branchPrice.lastIndexOf(' '),
                                           widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }',
                                       style: TextStyle(
-                                        color:
-                                        Color.fromRGBO(255, 255, 255, 0.8),
+                                        color: Color.fromRGBO(255, 255, 255, 0.8),
                                         fontFamily: 'Roboto',
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
@@ -840,14 +822,9 @@ class _PrintCommercialScreenState extends State<PrintCommercialScreen> {
                                                     ),
                                                   );
                                                 } else {
-                                                  showCustomSnackBar(AppLocalization
-                                                      .of(context)
-                                                      ?.translate(
-                                                      'please_select_a_client') ??
-                                                      'Iltimos client tanlang');
+                                                  showCustomSnackBar(AppLocalization.of(context)?.translate('please_select_a_client') ?? 'Iltimos client tanlang');
                                                 }
-                                                print(
-                                                    'Order>>>>>>>>>>>>> ${widget.order}');
+                                                print('Order>>>>>>>>>>>>> ${widget.order}');
                                                 print(
                                                     'post Order reached here');
                                               });

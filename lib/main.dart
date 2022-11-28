@@ -11,7 +11,6 @@ import 'package:furniture_app/data/repository/product_repository.dart';
 import 'package:furniture_app/providers/cart_provider.dart';
 import 'package:furniture_app/providers/invoice_provider.dart';
 import 'package:furniture_app/providers/localization_provider.dart';
-import 'package:furniture_app/screens/pdf/invoices.dart';
 import 'package:furniture_app/screens/splash_screen.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';

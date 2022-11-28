@@ -102,7 +102,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     ),
                     SizedBox(height: 8,),
                     Text(
-                      '${moneyFormat(widget.orderItem.productId.price.intBranchPrice.toString())}${widget.orderItem.productId.price.branchPrice.substring(widget.orderItem.productId.price.branchPrice.lastIndexOf(' '),widget.orderItem.productId.price.branchPrice.length)}',
+                      '${moneyFormat(widget.orderItem.iodp.round().toString())}${widget.orderItem.productId.price.branchPrice.substring(widget.orderItem.productId.price.branchPrice.lastIndexOf(' '),widget.orderItem.productId.price.branchPrice.length)}',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontFamily: 'Roboto',

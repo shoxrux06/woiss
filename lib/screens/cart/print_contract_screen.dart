@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:furniture_app/data/model/client_model.dart';
+import 'package:furniture_app/data/model/client_payment.dart';
 import 'package:furniture_app/providers/invoice_provider.dart';
 import 'package:furniture_app/utils/color_resources.dart';
 import 'package:furniture_app/utils/custom_themes.dart';
+import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -58,7 +60,30 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
 
   List<Cart> cartItems = [];
 
+  bool isPayedPrePayment = false;
+
+  double prePayment1 = 0;
+  double remainingPayment1 = 0;
+  double remainingPayment2 = 0;
+
   final paymentController = TextEditingController();
+
+  @override
+  void initState() {
+
+    if(widget.order != null){
+      for(int i = 0;i<widget.order!.orderItems.length;i++){
+        totalSum += (widget.order!.orderItems[i].iodp.round() * widget.order!.orderItems[i].quantity) ;
+      }
+    }else{
+      for(int i = 0;i<widget.orderItems.length;i++){
+        editedTotalSum += (widget.orderItems[i].iodp.round() * widget.orderItems[i].quantity);
+      }
+    }
+
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +109,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
             img: myOrderItems[i].productId.img,
             color: myOrderItems[i].color,
             size: myOrderItems[i].size,
+            iodp: myOrderItems[i].iodp,
             categoryName: myOrderItems[i].productId.categoryId.name,
           ),
           quantity: ValueNotifier(
@@ -92,15 +118,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
         ),
       );
     }
-    if(widget.order != null){
-      for(int i = 0;i<widget.order!.orderItems.length;i++){
-        totalSum += (widget.order!.orderItems[i].productId.price.intBranchPrice * widget.order!.orderItems[i].quantity) ;
-      }
-    }else{
-      for(int i = 0;i<widget.orderItems.length;i++){
-        editedTotalSum += (widget.orderItems[i].productId.price.intBranchPrice * widget.orderItems[i].quantity);
-      }
-    }
+
 
     String? moneyFormat(String price) {
       if (price.length > 2) {
@@ -122,6 +140,8 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
     }else{
       paddingValue = 20.0;
     }
+    double totalSumTwo = totalSum- totalSum * (widget.discount / 100);
+    double editedTotalSumTwo = editedTotalSum - (editedTotalSum * (widget.discount / 100));
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -371,6 +391,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                                     order: widget.order,
                                                     orderItems:widget.order != null? widget.order?.orderItems??[] : widget.orderItems,
                                                     dateTime: DateTime.now(),
+                                                    clientPayment: ClientPayment(prepaidAmount: 0,remainingAmount: 0),
                                                   ),
                                                 ),
                                               ),
@@ -474,8 +495,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '${moneyFormat(widget.order != null? ((totalSum- totalSum * (widget.discount / 100)).toInt().toString()):
-                                    ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}$valyutaName',
+                                    '${moneyFormat(widget.order != null? totalSumTwo.toInt().toString(): (editedTotalSumTwo.toInt()).toString())}$valyutaName',
                                     style: TextStyle(
                                       color: Color.fromRGBO(255, 255, 255, 0.8),
                                       fontFamily: 'Roboto',
@@ -501,7 +521,17 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                   decoration: InputDecoration(
                                     suffixIcon: InkWell(
                                       onTap: (){
-
+                                        if(paymentController.text.isNotEmpty){
+                                          prePayment1 = double.parse(paymentController.text);
+                                          remainingPayment1 = totalSumTwo - double.parse(paymentController.text);
+                                          remainingPayment2 = editedTotalSumTwo - double.parse(paymentController.text);
+                                          print('Pre Payment---> $prePayment1');
+                                          print('remainingPayment1-> $remainingPayment1');
+                                          print('remainingPayment2--> $remainingPayment2');
+                                          setState(() {
+                                            isPayedPrePayment = true;
+                                          });
+                                        }
                                       },
                                       child: Container(
                                         width: 54,
@@ -548,15 +578,16 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                 // startText: AppLocalization.of(context)?.translate('to_sum_it_up') ?? 'Под итог',
                                   startText: 'Предоплата',
                                   endText:
-                                  '${moneyFormat(widget.order != null ? ((totalSum - totalSum * (widget.discount / 100)).toInt().toString()) : ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}'
+                                  '${isPayedPrePayment? moneyFormat(widget.order != null ? (prePayment1.round().toString()) : (prePayment1.round().toString())): prePayment1}'
                                       '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
                                   substring(widget.order!.orderItems[0].productId.price.branchPrice.lastIndexOf(' '),
-                                      widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'),
+                                      widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'
+                              ),
                               CustomItemWidget(
                                 // startText: AppLocalization.of(context)?.translate('to_sum_it_up') ?? 'Под итог',
                                   startText: 'Остаток платежа',
                                   endText:
-                                  '${moneyFormat(widget.order != null ? ((totalSum - totalSum * (widget.discount / 100)).toInt().toString()) : ((editedTotalSum - (editedTotalSum * (widget.discount / 100))).toInt()).toString())}'
+                                  '${isPayedPrePayment?moneyFormat(widget.order != null ? (remainingPayment1.round().toString()) : (remainingPayment2.round()).toString()): remainingPayment1}'
                                       '${(widget.order != null? widget.order!.orderItems[0].productId.price.branchPrice.
                                   substring(widget.order!.orderItems[0].productId.price.branchPrice.lastIndexOf(' '),
                                       widget.order!.orderItems[0].productId.price.branchPrice.length) : '') }'),
@@ -576,15 +607,11 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                   return showDialog(
                                     context: context,
                                     builder: (ctx) => AlertDialog(
-                                      backgroundColor: ColorsResources
-                                          .PRIMARY_BACKROUND_COLOR,
+                                      backgroundColor: ColorsResources.PRIMARY_BACKROUND_COLOR,
                                       title: Text(
-                                        AppLocalization.of(context)?.translate(
-                                            'do_you_want_to_print') ??
-                                            "Хотите распечатать?",
+                                        AppLocalization.of(context)?.translate('do_you_want_to_print') ?? "Хотите распечатать?",
                                         style: TextStyle(
-                                          color: Color.fromRGBO(
-                                              255, 255, 255, 0.9),
+                                          color: Color.fromRGBO(255, 255, 255, 0.9),
                                           fontFamily: 'Roboto',
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
@@ -613,8 +640,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                                 ?.translate('no') ??
                                                 "Нет",
                                             style: TextStyle(
-                                              color: Color.fromRGBO(
-                                                  255, 255, 255, 0.9),
+                                              color: Color.fromRGBO(255, 255, 255, 0.9),
                                               fontFamily: 'Roboto',
                                               fontSize: 13,
                                               fontWeight: FontWeight.w500,
@@ -645,6 +671,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                                     order: widget.order,
                                                     orderItems:widget.order != null? widget.order?.orderItems??[] : widget.orderItems,
                                                     dateTime: DateTime.now(),
+                                                    clientPayment: ClientPayment(prepaidAmount: prePayment1,remainingAmount: widget.order != null?remainingPayment1: remainingPayment2),
                                                   ),
                                                 ),
                                               ),
@@ -655,8 +682,7 @@ class _PrintContractScreenState extends State<PrintContractScreen> {
                                                 ?.translate('yes') ??
                                                 "Да",
                                             style: TextStyle(
-                                              color: Color.fromRGBO(
-                                                  255, 255, 255, 0.9),
+                                              color: Color.fromRGBO(255, 255, 255, 0.9),
                                               fontFamily: 'Roboto',
                                               fontSize: 13,
                                               fontWeight: FontWeight.w500,

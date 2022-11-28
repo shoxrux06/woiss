@@ -192,7 +192,7 @@ class _CommercialScreenState extends State<CommercialScreen> {
                                   ),
                                   Text(
                                     invoiceProvider.commercialList[index].orderItems.isNotEmpty
-                                        ? '${moneyFormat((invoiceProvider.commercialList[index].orderItems.map((e) => e.quantity * e.productId.price.intBranchPrice).reduce((value, element) => value + element)).toString())}$valyutaName'
+                                        ? '${moneyFormat((invoiceProvider.commercialList[index].orderItems.map((e) => e.quantity * e.iodp.round()).reduce((value, element) => value + element)).toString())}$valyutaName'
                                         : '0 $valyutaName',
                                     style: TextStyle(
                                       fontFamily: 'Roboto',
@@ -313,7 +313,7 @@ class _CommercialScreenState extends State<CommercialScreen> {
                                           ),
                                           Text(
                                             invoiceProvider.commercialList[index].orderItems.isNotEmpty
-                                                ? '${moneyFormat((invoiceProvider.commercialList[index].orderItems.map((e) => e.quantity * e.productId.price.intBranchPrice).reduce((value, element) => value + element)).toString())}$valyutaName'
+                                                ? '${moneyFormat((invoiceProvider.commercialList[index].orderItems.map((e) => e.quantity * e.iodp.round()).reduce((value, element) => value + element)).toString())}$valyutaName'
                                                 : '0 $valyutaName',
                                             style: TextStyle(
                                               fontFamily: 'Roboto',

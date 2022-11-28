@@ -15,26 +15,29 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
   var sum1;
   var sum2;
   var differenceSum = 0;
+  int? prepaidAmount = 0;
+  int? remainingAmount = 0;
+
   if (invoice.order != null) {
-    sum1 = int.tryParse(
-            '${invoice.order?.orderItems.map((e) => e.quantity * e.productId.price.intBranchPrice).reduce((value, element) => value + element) ?? 0}') ??
-        0;
-    sum2 = (int.tryParse(
-                '${invoice.order?.orderItems.map((e) => e.quantity * e.productId.price.intBranchPrice).reduce((value, element) => value + element) ?? 0}')! *
-            (discount * 0.01))
-        .toInt();
+    print('iodp  orderItems -->${invoice.order?.orderItems}');
+    sum1 = invoice.order?.orderItems.map((e) => e.quantity * e.iodp).reduce((value, element) => value + element).toInt() ?? 0;
+    sum2  = ((sum1 * discount)/100).round();
+    print('discount-->$discount');
+    // sum1 = int.tryParse('${invoice.order?.orderItems.map((e) => e.quantity * e.iodp).reduce((value, element) => value + element) ?? 0}') ?? 0;
+    // sum2 = (int.tryParse('${invoice.order?.orderItems.map((e) => e.quantity * e.iodp).reduce((value, element) => value + element) ?? 0}')??0 * (discount * 0.01)).toInt();
     differenceSum = sum1 - sum2;
+    print('sum1 -->$sum1');
+    print('sum2 -->$sum2');
+    prepaidAmount = invoice.clientPayment?.prepaidAmount.round();
+    remainingAmount = invoice.clientPayment?.remainingAmount.round();
   } else {
     invoice.orderItems.fold(0, (previousValue, element) {
-      sum1 = (element.quantity * element.productId.price.intBranchPrice);
+      sum1 = (element.quantity * element.iodp);
       print('previousValue>>>$previousValue');
       print('sum1>>>$sum1');
     });
     invoice.orderItems.fold(0, (previousValue, element) {
-      sum2 = (element.quantity *
-              element.productId.price.intBranchPrice *
-              (discount * 0.01))
-          .toInt();
+      sum2 = (element.quantity * element.iodp * (discount * 0.01)).toInt();
       print('sum2>>>$sum2');
     });
     if (sum1 != null && sum2 != null) {
@@ -148,6 +151,8 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
   String offerPriceDetail = '';
   String totalWithoutDiscount = '';
   String subtotalDiscount = '';
+  String prepaidAmountName = '';
+  String remainingAmountName = '';
   String dividerText = '';
   String discountNumber = '';
   String sum = '';
@@ -178,6 +183,8 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
     offerPriceDetail = 'OFFER PRICE DETAIL';
     totalWithoutDiscount = 'TOTAL WITHOUT DISCOUNT (VAT EXCLUDED)';
     subtotalDiscount = 'TOTAL WITH DISCOUNT (VAT EXCLUDED)';
+    prepaidAmountName = 'PREPAID AMOUNT';
+    remainingAmountName = 'REMAINING AMOUNT';
     dividerText =
         'In order to ensure total quality and customer satisfaction, all products are carefully inspected by WOISS before they are packaged.If the buyer does not receive the products subject to the contract on the delivery date specified above, the new delivery date is determined unilaterally by WOISS according to its own production and shipment schedule.';
   } else if (languageCode == 'ru') {
@@ -208,6 +215,8 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
     discountNumber = 'СКИДКА:';
     totalWithoutDiscount = 'ИТОГО БЕЗ СКИДКИ (БЕЗ НДС)';
     subtotalDiscount = 'ИТОГО СО СКИДКОЙ (БЕЗ НДС)';
+    prepaidAmountName = 'СУММА ПРЕДОПЛАТЫ';
+    remainingAmountName = 'ОСТАВШАЯСЯ СУММА';
     sum = 'сум';
     dividerText = 'Чтобы гарантировать качество и удовлетворенность клиентов,'
         ' WOISS тщательно проверяет все продукты перед их упаковкой.'
@@ -241,6 +250,8 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
     offerPriceDetail = 'TEKLİF BEDELİ DETAYI';
     totalWithoutDiscount = 'İNDİRİMSİZ TOPLAM (KDV HARİÇ)';
     subtotalDiscount = 'TOPLAM İNDİRİMLİ (KDV HARİÇ)';
+    prepaidAmountName = 'ÖN ÖDEME TUTARI';
+    remainingAmountName = 'KALAN MIKTAR';
     dividerText =
         'Toplam kalite ve müşteri memnuniyetinin tesisi için tüm ürünler paketlenmeden önce WOİSS tarafından dikkatlice denetlenir.Alıcının, sözleşme konusu ürünleri yukarıda belirtilen teslim tarihinde teslim almaması halinde, yeni teslim tarihiWOİSS tarafından kendi üretim ve sevkiyat programına göre tek taraflı olarak belirlenir.';
   } else if (languageCode == 'uz') {
@@ -270,6 +281,8 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
     sum = 'so\'m';
     totalWithoutDiscount = 'JAMI CHEGIRMASIZ (QQS CHIZQANDA)';
     subtotalDiscount = 'UMUMIY CHEGIRMA (QQS CHIZQANDA)';
+    prepaidAmountName = 'TO\'LANGAN SUMMA';
+    remainingAmountName = 'QOLGAN SUMMA';
     dividerText =
         "Umumiy sifat va mijozlar ehtiyojini qondirish uchun barcha mahsulotlar qadoqlashdan oldin WOISS tomonidan diqqat bilan tekshiriladi.Agar xaridor shartnomada ko'rsatilgan mahsulotlarni yuqorida ko'rsatilgan etkazib berish sanasida olmasa, yangi etkazib berish sanasiU WOISS tomonidan o'zining ishlab chiqarish va jo'natish jadvaliga muvofiq bir tomonlama belgilanadi.";
   }
@@ -676,7 +689,7 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                         ),
                         Expanded(
                           child: PaddedText(
-                              "${moneyFormat(orderItem.productId.price.intBranchPrice.toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
+                              "${moneyFormat(orderItem.iodp.round().toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
                           flex: 2,
                         ),
                         Expanded(
@@ -685,18 +698,18 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                         ),
                         Expanded(
                           child: PaddedText(
-                              "${moneyFormat((orderItem.quantity * orderItem.productId.price.intBranchPrice).toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
+                              "${moneyFormat((orderItem.quantity * orderItem.iodp).round().toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
                           flex: 2,
                         ),
                         Expanded(
                           child: PaddedText(
-                              "${'${moneyFormat((orderItem.quantity * orderItem.productId.price.intBranchPrice - (orderItem.quantity * orderItem.productId.price.intBranchPrice * (invoice.client!.discount! * 0.01)).toInt()).toString())}'} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
+                              "${'${moneyFormat((orderItem.quantity * orderItem.iodp - (orderItem.quantity * orderItem.iodp * (invoice.client!.discount! * 0.01)).toInt()).round().toString())}'} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
                           flex: 2,
                         ),
                         Expanded(
                           child: CustomCategoryNameText(
-                              "${moneyFormat('${ ((orderItem.quantity * orderItem.productId.price.intBranchPrice -
-                                  (orderItem.quantity * orderItem.productId.price.intBranchPrice * (invoice.client!.discount! * 0.01))).toInt() / valyutaValue).toStringAsFixed(0)}')}\$"),
+                              "${moneyFormat('${ ((orderItem.quantity * orderItem.iodp -
+                                  (orderItem.quantity * orderItem.iodp * (invoice.client!.discount! * 0.01))).toInt() / valyutaValue).round().toStringAsFixed(0)}')}\$"),
                           flex: 2,
                         )
                       ],
@@ -730,11 +743,11 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "$totalWithoutDiscount",
+                                    totalWithoutDiscount,
                                     style: TextStyle(fontSize: 10),
                                   ),
                                   Text(
-                                    "$subtotalDiscount ",
+                                    subtotalDiscount,
                                     style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold),
@@ -745,14 +758,13 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${moneyFormat(sum1.toInt().toString()) ?? 0}  ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
+                                    "${moneyFormat(sum1.toInt().toString())}  ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
                                     style: TextStyle(fontSize: 10),
                                   ),
                                   Text(
-                                    "${moneyFormat(differenceSum.toString()) ?? 0} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
+                                    "${moneyFormat(differenceSum.toInt().toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
                                     style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold),
+                                        fontSize: 10, fontWeight: FontWeight.bold),
                                   ),
                                 ]),
                             SizedBox(width: 24),
@@ -761,12 +773,61 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                               decoration: BoxDecoration(
                                   border: Border.all(color: PdfColor(0, 0, 0))),
                               child: Text(
-                                '${moneyFormat((differenceSum.toInt() / valyutaValue).toStringAsFixed(0))}\$',
-                                style: TextStyle(
-                                    fontSize: 10, fontWeight: FontWeight.bold),
+                                "${moneyFormat((differenceSum.toInt() / valyutaValue).toStringAsFixed(0))}\$",
+                                style:
+                                TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                               ),
                             )
                           ]),
+                      SizedBox(height: 4),
+
+                      invoice.order?.status == 2?  Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "$prepaidAmountName",
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    remainingAmountName,
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold
+                                    ),
+                                  ),
+                                ]),
+                            SizedBox(width: 24),
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${moneyFormat(prepaidAmount!.toInt().toString())}  ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  Text(
+                                    "${moneyFormat(remainingAmount!.toInt().toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
+                                    style: TextStyle(
+                                        fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ]),
+                            SizedBox(width: 24),
+                            Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: PdfColor(0, 0, 0))),
+                              child: Text(
+                                "${moneyFormat((remainingAmount.toInt() / valyutaValue).toStringAsFixed(0))}\$",
+                                style:
+                                TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            )
+                          ]): Container()
                     ],
                   ),
             Container(height: 50),
@@ -911,7 +972,7 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                   ),
                   Expanded(
                     child: PaddedText(
-                        "${moneyFormat(orderItem.productId.price.intBranchPrice.toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
+                        "${moneyFormat(orderItem.iodp.toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
                     flex: 2,
                   ),
                   Expanded(
@@ -920,17 +981,17 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                   ),
                   Expanded(
                     child: PaddedText(
-                        "${moneyFormat((orderItem.quantity * orderItem.productId.price.intBranchPrice).toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
+                        "${moneyFormat((orderItem.quantity * orderItem.iodp).toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
                     flex: 2,
                   ),
                   Expanded(
                     child: PaddedText(
-                        "${'${moneyFormat((orderItem.quantity * orderItem.productId.price.intBranchPrice - (orderItem.quantity * orderItem.productId.price.intBranchPrice * (invoice.client!.discount! * 0.01)).toInt()).toString())}'} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
+                        "${'${moneyFormat((orderItem.quantity * orderItem.iodp - (orderItem.quantity * orderItem.iodp * (invoice.client!.discount! * 0.01)).toInt()).toString())}'} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}"),
                     flex: 2,
                   ),
                   Expanded(
                     child: CustomCategoryNameText(
-                        "${moneyFormat(((orderItem.quantity * orderItem.productId.price.intBranchPrice - (orderItem.quantity * orderItem.productId.price.intBranchPrice * (invoice.client!.discount! * 0.01))).toInt() / valyutaValue).toStringAsFixed(0))}\$"),
+                        "${moneyFormat(((orderItem.quantity * orderItem.iodp - (orderItem.quantity * orderItem.iodp * (invoice.client!.discount! * 0.01))).toInt() / valyutaValue).toStringAsFixed(0))}\$"),
                     flex: 2,
                   )
                 ],
@@ -961,13 +1022,14 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "$totalWithoutDiscount",
+                          totalWithoutDiscount,
                           style: TextStyle(fontSize: 10),
                         ),
                         Text(
-                          "$subtotalDiscount ",
+                          subtotalDiscount,
                           style: TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
                         ),
                       ]),
                   SizedBox(width: 24),
@@ -996,6 +1058,55 @@ Future<Uint8List> makePdf(Invoice invoice, String languageCode) async {
                     ),
                   )
                 ]),
+
+            SizedBox(height: 4),
+
+            invoice.order?.status == 2?  Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      Text(
+                          "$prepaidAmountName ",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          remainingAmountName,
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ]),
+                  SizedBox(width: 24),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${moneyFormat(prepaidAmount!.toInt().toString())}  ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
+                          style: TextStyle(fontSize: 10),
+                        ),
+                        Text(
+                          "${moneyFormat(remainingAmount!.toInt().toString())} ${invoice.orderItems.isNotEmpty ? invoice.orderItems[0].productId.price.branchPrice.substring(invoice.orderItems[0].productId.price.branchPrice.lastIndexOf(' ', invoice.orderItems[0].productId.price.branchPrice.length)) : ''}",
+                          style: TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ]),
+                  SizedBox(width: 24),
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: PdfColor(0, 0, 0))),
+                    child: Text(
+                      "${moneyFormat((remainingAmount.toInt() / valyutaValue).toStringAsFixed(0))}\$",
+                      style:
+                      TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  )
+                ]): Container()
           ],
         ),
       ]));

@@ -120,6 +120,7 @@ class OrderItem {
    required this.quantity,
    required this.color,
    required this.size,
+   required this.iodp,
   });
 
   int id;
@@ -128,6 +129,7 @@ class OrderItem {
   int quantity;
   String color;
   String size;
+  double iodp;
 
   factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
     id: json["id"],
@@ -136,6 +138,7 @@ class OrderItem {
     quantity: json["quantity"],
     color: json["color"],
     size: json["size"],
+    iodp: json["iodp"] != null? json["iodp"].toDouble(): 0.0,
   );
 
   Map<String, dynamic> toJson() => {
@@ -145,7 +148,13 @@ class OrderItem {
     "quantity": quantity,
     "color": color,
     "size": size,
+    "iodp": iodp,
   };
+
+  @override
+  String toString() {
+    return 'OrderItem{id: $id, productId: $productId, orderId: $orderId, quantity: $quantity, color: $color, size: $size, iodp: $iodp}';
+  }
 }
 
 class ProductId {
